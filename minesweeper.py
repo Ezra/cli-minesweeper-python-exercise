@@ -70,16 +70,21 @@ class MinesweeperCmd(Cmd):
     # ----- meta -----
 
     def precmd(self, line):
-        line = line.lower()
+        if line != 'EOF':
+            line = line.lower()
         return line
 
     def postcmd(self, stop, line):
+        if stop:
+            return True
+
         print()
         if self.board:
             print(self.board)
         else:
             print(NEW_GAME_ADVICE)
-        return stop
+
+        return False
 
 
 def main():
