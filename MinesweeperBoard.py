@@ -7,11 +7,29 @@ class MinesweeperKnowledgeState(Enum):
     FLAGGED = 2
     STEPPED = 3
 
+    def __str__(self):
+        if self == self.HIDDEN:
+            return '#'
+        elif self == MinesweeperKnowledgeState.FLAGGED:
+            return '*'
+        elif self == MinesweeperKnowledgeState.STEPPED:
+            return '_'
+        else:
+            return 'E'
+
 
 class MinesweeperCellState(object):
     def __init__(self, has_mine):
         self.has_mine = has_mine
         self.mine_neighbors = None  # to be set when we know our neighbors
+
+    def __str__(self):
+        if self.has_mine:
+            return '*'
+        elif self.mine_neighbors is not None:
+            return str(self.mine_neighbors)
+        else:
+            return 'E'
 
 
 class MinesweeperBoard(object):
@@ -30,7 +48,7 @@ class MinesweeperBoard(object):
 
     def _truth_neighbors(self, x, y):
         return [
-            self.truth[nx][ny]
+            self.truth[ny][nx]
             for ny in range(max(y - 1, 0), min(y + 2, self.height))
             for nx in range(max(x - 1, 0), min(x + 2, self.width))
             if nx != x and ny != y
@@ -44,19 +62,32 @@ class MinesweeperBoard(object):
         y = safe_y
         # place num_mines more mines
         for __ in range(self.num_mines):
-            self.truth[x][y].has_mine = True
-            while self.truth[x][y].has_mine:
-                x = random.randint(0, self.width)
-                y = random.randint(0, self.height)
-        self.truth[x][y].has_mine = True
+            self.truth[y][x].has_mine = True
+            while self.truth[y][x].has_mine:
+                x = random.randint(0, self.width - 1)
+                y = random.randint(0, self.height - 1)
+        self.truth[y][x].has_mine = True
         # remove our placeholder mine
-        self.truth[safe_x][safe_y].has_mine = False
+        self.truth[safe_y][safe_x].has_mine = False
 
         # compute dangerous neighbors
         for y in range(self.height):
             for x in range(self.width):
-                self.truth[x][y].mine_neighbors = sum(neighbor.has_mine for neighbor in self._truth_neighbors(x, y))
+                self.truth[y][x].mine_neighbors = sum(neighbor.has_mine for neighbor in self._truth_neighbors(x, y))
 
     def step(self, x, y):
         if not self.truth:
             self._setup_mines(x, y)
+
+    def _cell_str(self, x, y):
+        return str(
+            self.truth[y][x]
+            if self.knowledge[y][x] == MinesweeperKnowledgeState.STEPPED
+            else self.knowledge[y][x]
+        )
+
+    def _truth_str(self):
+        return '\n'.join([''.join(str(cell) for cell in row) for row in self.truth])
+
+    def __str__(self):
+        return '\n'.join([''.join(self._cell_str(x, y) for x in range(self.width)) for y in range(self.height)])
