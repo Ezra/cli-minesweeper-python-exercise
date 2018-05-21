@@ -32,7 +32,7 @@ class MinesweeperBoard(object):
 
         if num_mines >= width * height:
             # this many mines could cause a naive mine-placement algorithm to loop indefinitely
-            raise ValueError("too many mines")
+            raise ValueError('too many mines')
         self.num_mines = num_mines
         self.width = width
         self.height = height
