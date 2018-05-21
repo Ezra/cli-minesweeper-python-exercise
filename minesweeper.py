@@ -2,6 +2,8 @@ from __future__ import print_function, division, unicode_literals, absolute_impo
 
 from cmd import Cmd
 
+from MinesweeperBoard import MinesweeperBoard
+
 
 class MinesweeperCmd(Cmd):
     """Handle commands for a game of Minesweeper."""
@@ -20,8 +22,12 @@ class MinesweeperCmd(Cmd):
 
 
 def main():
-    interpreter = MinesweeperCmd()
-    interpreter.cmdloop()
+    # interpreter = MinesweeperCmd()
+    # interpreter.cmdloop()
+    board = MinesweeperBoard(6, 4, 6)
+    board.step(1, 1)
+    print(board._truth_str())
+    print(board)
 
 
 if __name__ == '__main__':
