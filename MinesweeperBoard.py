@@ -9,13 +9,19 @@ class KnowledgeState(Enum):
 
     def __str__(self):
         if self == self.HIDDEN:
-            return '#'
+            return '?'
         elif self == KnowledgeState.FLAGGED:
-            return '*'
+            return '#'
         elif self == KnowledgeState.STEPPED:
-            return '_'
+            return 'S'
         else:
             return 'E'
+
+
+class EndState(Enum):
+    RUNNING = 1
+    VICTORY = 2
+    DEFEAT = 3
 
 
 class MinesweeperBoard(object):
@@ -37,13 +43,20 @@ class MinesweeperBoard(object):
         self.truth = None  # lazy-initialize these on first click to prevent first-click death
         self.neighbor_count = None
 
-    def _count_neighboring_mines(self, x, y):
-        return sum(
-            self.truth[ny][nx]
+        # track progress
+        self.num_stepped = 0
+        self.end_state = EndState.RUNNING
+
+    def _neighbor_coordinates(self, x, y):
+        return [
+            (nx, ny)
             for ny in range(max(y - 1, 0), min(y + 2, self.height))
             for nx in range(max(x - 1, 0), min(x + 2, self.width))
             if not (nx == x and ny == y)
-        )
+        ]
+
+    def _count_neighboring_mines(self, x, y):
+        return sum(self.truth[ny][nx] for nx, ny in self._neighbor_coordinates(x, y))
 
     def _setup_mines(self, safe_x, safe_y):
         self.truth = [[False for x in range(self.width)] for y in range(self.height)]
@@ -67,25 +80,75 @@ class MinesweeperBoard(object):
             for x in range(self.width):
                 self.neighbor_count[y][x] = self._count_neighboring_mines(x, y)
 
+    def get_game_state(self):
+        return self.end_state
+
     def step(self, x, y):
         """Try stepping at (x, y).
         If necessary, generate the board first, ensuring (x, y) is safe.
-        Returns whether a mine was hit.
+        Returns whether the game is over.
         """
         if not self.truth:
             self._setup_mines(x, y)
 
-        if self.knowledge[y][x] == KnowledgeState.HIDDEN:
-            self.knowledge[y][x] = KnowledgeState.STEPPED
-            return self.truth[y][x]
-        else:
-            return False
+        if not self.end_state == EndState.RUNNING:
+            return True
+
+        if self.knowledge[y][x] != KnowledgeState.HIDDEN:
+            return False  # can't step on a revealed or flagged space
+        self.knowledge[y][x] = KnowledgeState.STEPPED
+        self.num_stepped += 1
+
+        if self.truth[y][x]:
+            self.end_state = EndState.DEFEAT
+            return True
+
+        # recursively expand if it's a bare patch
+        if not self.neighbor_count[y][x]:
+            for nx, ny in self._neighbor_coordinates(x, y):
+                if self.knowledge[ny][nx] == KnowledgeState.HIDDEN:
+                    self.step(nx, ny)
+
+        # check for victory
+        if self.num_stepped + self.num_mines >= self.width * self.height:
+            self.end_state = EndState.VICTORY
+            for ny in range(self.height):
+                for nx in range(self.width):
+                    if self.truth[y][x]:
+                        self.knowledge[y][x] = KnowledgeState.FLAGGED
+            return True
+
+        return False
+
+    def flag(self, x, y):
+        """Place a flag at (x, y)."""
+
+        if not self.end_state == EndState.RUNNING:
+            return
+        if self.knowledge[y][x] != KnowledgeState.HIDDEN:
+            return
+
+        self.knowledge[y][x] = KnowledgeState.FLAGGED
+
+    def unflag(self, x, y):
+        """Remove a flag at (x, y)."""
+
+        if not self.end_state == EndState.RUNNING:
+            return
+        if self.knowledge[y][x] != KnowledgeState.FLAGGED:
+            return
+
+        self.knowledge[y][x] = KnowledgeState.HIDDEN
 
     def _cell_str(self, x, y):
-        if self.knowledge[y][x] == KnowledgeState.STEPPED:
-            return '*' if self.truth[y][x] else str(self.neighbor_count[y][x])
-        else:
+        if self.knowledge[y][x] != KnowledgeState.STEPPED:
             return str(self.knowledge[y][x])
+        elif self.truth[y][x]:
+            return '*'
+        elif not self.neighbor_count[y][x]:
+            return '.'
+        else:
+            return str(self.neighbor_count[y][x])
 
     def _truth_str(self):
         contents = '\n'.join([''.join('!' if has_mine else '.' for has_mine in row) for row in self.truth])
