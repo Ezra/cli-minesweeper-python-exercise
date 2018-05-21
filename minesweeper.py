@@ -2,7 +2,7 @@ from __future__ import print_function, division, unicode_literals, absolute_impo
 
 from cmd import Cmd
 
-from MinesweeperBoard import MinesweeperBoard
+from MinesweeperBoard import MinesweeperBoard, EndState
 
 NEW_GAME_ADVICE = 'Start a new game with "new WIDTH HEIGHT NUM_MINES".'
 
@@ -26,10 +26,14 @@ class MinesweeperCmd(Cmd):
             return self.onecmd("help new")
 
         self.board = MinesweeperBoard(width, height, num_mines)
+        return False
+
+    def _cleanup_game(self):
+        self.board = None
 
     def do_end(self, __):
         """End the game, but don't exit the program."""
-        self.board = None
+        self._cleanup_game()
 
     # ----- game play -----
 
@@ -50,22 +54,40 @@ class MinesweeperCmd(Cmd):
             print('out of range')
             return False
 
-        # TODO: if the game is done, print something interesting and discard it
+        if game_end:
+            print()
+            print(self.board)
+            print()
+            if game_end == EndState.VICTORY:
+                print("You win!!")
+            elif game_end == EndState.DEFEAT:
+                print("You lose.")
+
+            self._cleanup_game()
+
+        return False
 
     # ----- parser handling -----
 
-    def do_exit(self, __):
-        """Exit the game."""
+    def _exit(self):
         print('Goodbye')
         return True
 
-    def do_quit(self, arg_string):
-        """Exit the game. (Synonym for exit.)"""
-        return self.do_exit(arg_string)
+    def do_bye(self, __):
+        """Exit the game."""
+        return self._exit()
 
-    def do_EOF(self, arg_string):
-        """Exit the game. (Synonym for exit.)"""
-        return self.do_exit(arg_string)
+    def do_exit(self, __):
+        """Exit the game."""
+        return self._exit()
+
+    def do_quit(self, __):
+        """Exit the game."""
+        return self._exit()
+
+    def do_EOF(self, __):
+        """Exit the game."""
+        return self._exit()
 
     # ----- meta -----
 

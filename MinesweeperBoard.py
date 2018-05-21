@@ -79,9 +79,6 @@ class MinesweeperBoard(object):
             for x in range(self.width):
                 self.neighbor_count[y][x] = self._count_neighboring_mines(x, y)
 
-    def get_game_state(self):
-        return self.end_state
-
     def step(self, x, y):
         """Try stepping at (x, y).
         If necessary, generate the board first, ensuring (x, y) is safe.
@@ -117,7 +114,7 @@ class MinesweeperBoard(object):
                         self.knowledge[y][x] = KnowledgeState.FLAGGED
             return self.end_state
 
-        return self.end_state # None
+        return self.end_state  # None
 
     def flag(self, x, y):
         """Place a flag at (x, y)."""
