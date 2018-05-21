@@ -19,9 +19,8 @@ class KnowledgeState(Enum):
 
 
 class EndState(Enum):
-    RUNNING = 1
+    DEFEAT = 1
     VICTORY = 2
-    DEFEAT = 3
 
 
 class MinesweeperBoard(object):
@@ -45,7 +44,7 @@ class MinesweeperBoard(object):
 
         # track progress
         self.num_stepped = 0
-        self.end_state = EndState.RUNNING
+        self.end_state = None
 
     def _neighbor_coordinates(self, x, y):
         return [
@@ -86,22 +85,22 @@ class MinesweeperBoard(object):
     def step(self, x, y):
         """Try stepping at (x, y).
         If necessary, generate the board first, ensuring (x, y) is safe.
-        Returns whether the game is over.
+        Returns None if the game is running, or an EndState if it is not.
         """
         if not self.truth:
             self._setup_mines(x, y)
 
-        if not self.end_state == EndState.RUNNING:
-            return True
+        if self.end_state:
+            return self.end_state
 
         if self.knowledge[y][x] != KnowledgeState.HIDDEN:
-            return False  # can't step on a revealed or flagged space
+            return self.end_state  # None. Can't step on a revealed or flagged space
         self.knowledge[y][x] = KnowledgeState.STEPPED
         self.num_stepped += 1
 
         if self.truth[y][x]:
             self.end_state = EndState.DEFEAT
-            return True
+            return self.end_state
 
         # recursively expand if it's a bare patch
         if not self.neighbor_count[y][x]:
@@ -116,14 +115,14 @@ class MinesweeperBoard(object):
                 for nx in range(self.width):
                     if self.truth[y][x]:
                         self.knowledge[y][x] = KnowledgeState.FLAGGED
-            return True
+            return self.end_state
 
-        return False
+        return self.end_state # None
 
     def flag(self, x, y):
         """Place a flag at (x, y)."""
 
-        if not self.end_state == EndState.RUNNING:
+        if self.end_state:
             return
         if self.knowledge[y][x] != KnowledgeState.HIDDEN:
             return
@@ -133,7 +132,7 @@ class MinesweeperBoard(object):
     def unflag(self, x, y):
         """Remove a flag at (x, y)."""
 
-        if not self.end_state == EndState.RUNNING:
+        if self.end_state:
             return
         if self.knowledge[y][x] != KnowledgeState.FLAGGED:
             return
