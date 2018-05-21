@@ -2,7 +2,7 @@ from enum import Enum
 import random
 
 
-class MinesweeperKnowledgeState(Enum):
+class KnowledgeState(Enum):
     HIDDEN = 1
     FLAGGED = 2
     STEPPED = 3
@@ -10,15 +10,15 @@ class MinesweeperKnowledgeState(Enum):
     def __str__(self):
         if self == self.HIDDEN:
             return '#'
-        elif self == MinesweeperKnowledgeState.FLAGGED:
+        elif self == KnowledgeState.FLAGGED:
             return '*'
-        elif self == MinesweeperKnowledgeState.STEPPED:
+        elif self == KnowledgeState.STEPPED:
             return '_'
         else:
             return 'E'
 
 
-class MinesweeperCellState(object):
+class TruthState(object):
     def __init__(self, has_mine):
         self.has_mine = has_mine
         self.mine_neighbors = None  # to be set when we know our neighbors
@@ -42,7 +42,7 @@ class MinesweeperBoard(object):
         self.width = width
         self.height = height
 
-        self.knowledge = [[MinesweeperKnowledgeState.HIDDEN for x in range(width)] for y in range(height)]
+        self.knowledge = [[KnowledgeState.HIDDEN for x in range(width)] for y in range(height)]
 
         self.truth = None  # lazy-initialize this on first click to prevent first-click death
 
@@ -51,11 +51,11 @@ class MinesweeperBoard(object):
             self.truth[ny][nx]
             for ny in range(max(y - 1, 0), min(y + 2, self.height))
             for nx in range(max(x - 1, 0), min(x + 2, self.width))
-            if nx != x and ny != y
+            if not (nx == x and ny == y)
         ]
 
     def _setup_mines(self, safe_x, safe_y):
-        self.truth = [[MinesweeperCellState(False) for x in range(self.width)] for y in range(self.height)]
+        self.truth = [[TruthState(False) for x in range(self.width)] for y in range(self.height)]
 
         # place a temporary mine in the safe space so we can remove it after
         x = safe_x
@@ -64,7 +64,7 @@ class MinesweeperBoard(object):
         for __ in range(self.num_mines):
             self.truth[y][x].has_mine = True
             while self.truth[y][x].has_mine:
-                x = random.randint(0, self.width - 1)
+                x = random.randint(0, self.width - 1)  # randint range is inclusive for some reason
                 y = random.randint(0, self.height - 1)
         self.truth[y][x].has_mine = True
         # remove our placeholder mine
@@ -79,10 +79,14 @@ class MinesweeperBoard(object):
         if not self.truth:
             self._setup_mines(x, y)
 
+        if self.knowledge[y][x] == KnowledgeState.HIDDEN:
+            self.knowledge[y][x] = KnowledgeState.STEPPED
+            return self.truth[y][x].has_mine
+
     def _cell_str(self, x, y):
         return str(
             self.truth[y][x]
-            if self.knowledge[y][x] == MinesweeperKnowledgeState.STEPPED
+            if self.knowledge[y][x] == KnowledgeState.STEPPED
             else self.knowledge[y][x]
         )
 
