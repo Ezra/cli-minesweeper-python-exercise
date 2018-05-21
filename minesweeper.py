@@ -6,17 +6,17 @@ from cmd import Cmd
 class MinesweeperCmd(Cmd):
     """Handle commands for a game of Minesweeper."""
 
-    def do_exit(self, _):
+    def do_exit(self, __):
         """Exit the game."""
         return True
 
-    def do_quit(self, text):
+    def do_quit(self, arg_string):
         """Exit the game. (Synonym for exit.)"""
-        return self.do_exit(text)
+        return self.do_exit(arg_string)
 
-    def do_EOF(self, text):
+    def do_EOF(self, arg_string):
         """Exit the game. (Synonym for exit.)"""
-        return self.do_exit(text)
+        return self.do_exit(arg_string)
 
 
 def main():
