@@ -4,7 +4,9 @@ from cmd import Cmd
 
 from MinesweeperBoard import MinesweeperBoard, EndState
 
+WELCOME = 'Welcome to Minesweeper!'
 NEW_GAME_ADVICE = 'Start a new game with "new WIDTH HEIGHT NUM_MINES".'
+PLAY_ADVICE = 'Step, flag, and unflag with "(step|flag|unflag) X Y".'
 
 
 class MinesweeperCmd(Cmd):
@@ -13,7 +15,9 @@ class MinesweeperCmd(Cmd):
     def __init__(self):
         Cmd.__init__(self)
         self.board = None
-        print(NEW_GAME_ADVICE)
+
+        self.prompt = '(Minesweeper) '
+        self.intro = '\n'.join(['', WELCOME, NEW_GAME_ADVICE, ''])
 
     # ----- game control -----
 
@@ -23,9 +27,13 @@ class MinesweeperCmd(Cmd):
         try:
             width, height, num_mines = (int(arg) for arg in arg_string.split())
         except ValueError:
-            return self.onecmd("help new")
+            return self.onecmd('help new')
 
         self.board = MinesweeperBoard(width, height, num_mines)
+
+        print()
+        print(PLAY_ADVICE)
+
         return False
 
     def _cleanup_game(self):
@@ -41,12 +49,12 @@ class MinesweeperCmd(Cmd):
         """step X Y
         Play a step at space X, Y."""
         if not self.board:
-            return self.onecmd("help new")
+            return self.onecmd('help new')
 
         try:
             x, y = (int(arg) for arg in arg_string.split())
         except ValueError:
-            return self.onecmd("help step")
+            return self.onecmd('help step')
 
         try:
             game_end = self.board.step(x, y)
@@ -59,9 +67,9 @@ class MinesweeperCmd(Cmd):
             print(self.board)
             print()
             if game_end == EndState.VICTORY:
-                print("You win!!")
+                print('You win!!')
             elif game_end == EndState.DEFEAT:
-                print("You lose.")
+                print('You lose.')
 
             self._cleanup_game()
 
@@ -71,12 +79,12 @@ class MinesweeperCmd(Cmd):
         """flag X Y
         Flag space X, Y as containing a mine."""
         if not self.board:
-            return self.onecmd("help new")
+            return self.onecmd('help new')
 
         try:
             x, y = (int(arg) for arg in arg_string.split())
         except ValueError:
-            return self.onecmd("help flag")
+            return self.onecmd('help flag')
 
         self.board.flag(x, y)
 
@@ -84,12 +92,12 @@ class MinesweeperCmd(Cmd):
         """mark X Y
         Flag space X, Y as containing a mine."""
         if not self.board:
-            return self.onecmd("help new")
+            return self.onecmd('help new')
 
         try:
             x, y = (int(arg) for arg in arg_string.split())
         except ValueError:
-            return self.onecmd("help mark")
+            return self.onecmd('help mark')
 
         self.board.flag(x, y)
 
@@ -97,12 +105,12 @@ class MinesweeperCmd(Cmd):
         """flag X Y
         Remove flag from space X, Y."""
         if not self.board:
-            return self.onecmd("help new")
+            return self.onecmd('help new')
 
         try:
             x, y = (int(arg) for arg in arg_string.split())
         except ValueError:
-            return self.onecmd("help unflag")
+            return self.onecmd('help unflag')
 
         self.board.unflag(x, y)
 
@@ -110,12 +118,12 @@ class MinesweeperCmd(Cmd):
         """mark X Y
         Remove flag from space X, Y."""
         if not self.board:
-            return self.onecmd("help new")
+            return self.onecmd('help new')
 
         try:
             x, y = (int(arg) for arg in arg_string.split())
         except ValueError:
-            return self.onecmd("help unmark")
+            return self.onecmd('help unmark')
 
         self.board.unflag(x, y)
 
