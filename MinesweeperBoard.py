@@ -110,8 +110,8 @@ class MinesweeperBoard(object):
             self.end_state = EndState.VICTORY
             for ny in range(self.height):
                 for nx in range(self.width):
-                    if self.truth[y][x]:
-                        self.knowledge[y][x] = KnowledgeState.FLAGGED
+                    if self.truth[ny][nx]:
+                        self.knowledge[ny][nx] = KnowledgeState.FLAGGED
             return self.end_state
 
         return self.end_state  # None
