@@ -88,7 +88,16 @@ class MinesweeperBoard(object):
             return str(self.knowledge[y][x])
 
     def _truth_str(self):
-        return '\n'.join([''.join('!' if has_mine else '.' for has_mine in row) for row in self.truth])
+        contents = '\n'.join([''.join('!' if has_mine else '.' for has_mine in row) for row in self.truth])
+        return self._add_indices(contents)
 
     def __str__(self):
-        return '\n'.join([''.join(self._cell_str(x, y) for x in range(self.width)) for y in range(self.height)])
+        contents = '\n'.join([''.join(self._cell_str(x, y) for x in range(self.width)) for y in range(self.height)])
+        return self._add_indices(contents)
+
+    def _add_indices(self, contents):
+        return '\n'.join(
+            ['  ' + ''.join(str(x) for x in range(self.width))] +
+            [' ' * (self.width + 2)] +
+            [str(y) + ' ' + line for y, line in enumerate(contents.split('\n'))]
+        )
