@@ -67,6 +67,58 @@ class MinesweeperCmd(Cmd):
 
         return False
 
+    def do_flag(self, arg_string):
+        """flag X Y
+        Flag space X, Y as containing a mine."""
+        if not self.board:
+            return self.onecmd("help new")
+
+        try:
+            x, y = (int(arg) for arg in arg_string.split())
+        except ValueError:
+            return self.onecmd("help flag")
+
+        self.board.flag(x, y)
+
+    def do_mark(self, arg_string):
+        """mark X Y
+        Flag space X, Y as containing a mine."""
+        if not self.board:
+            return self.onecmd("help new")
+
+        try:
+            x, y = (int(arg) for arg in arg_string.split())
+        except ValueError:
+            return self.onecmd("help mark")
+
+        self.board.flag(x, y)
+
+    def do_unflag(self, arg_string):
+        """flag X Y
+        Remove flag from space X, Y."""
+        if not self.board:
+            return self.onecmd("help new")
+
+        try:
+            x, y = (int(arg) for arg in arg_string.split())
+        except ValueError:
+            return self.onecmd("help unflag")
+
+        self.board.unflag(x, y)
+
+    def do_unmark(self, arg_string):
+        """mark X Y
+        Remove flag from space X, Y."""
+        if not self.board:
+            return self.onecmd("help new")
+
+        try:
+            x, y = (int(arg) for arg in arg_string.split())
+        except ValueError:
+            return self.onecmd("help unmark")
+
+        self.board.unflag(x, y)
+
     # ----- parser handling -----
 
     def _exit(self):
