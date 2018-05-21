@@ -1,6 +1,5 @@
 from __future__ import print_function, division, unicode_literals, absolute_import
 
-import sys
 from cmd import Cmd
 
 
@@ -20,10 +19,10 @@ class MinesweeperCmd(Cmd):
         return self.do_exit(text)
 
 
-def main(argv=None):
+def main():
     interpreter = MinesweeperCmd()
     interpreter.cmdloop()
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main()
