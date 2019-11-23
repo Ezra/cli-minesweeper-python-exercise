@@ -1,3 +1,6 @@
+''' classes to support playing a game of Minesweeper
+'''
+
 from enum import Enum
 import random
 
@@ -79,6 +82,23 @@ class MinesweeperBoard(object):
             for x in range(self.width):
                 self.neighbor_count[y][x] = self._count_neighboring_mines(x, y)
 
+    def _recursively_clear(self, x, y):
+        for nx, ny in self._neighbor_coordinates(x, y):
+            if self.knowledge[ny][nx] == KnowledgeState.HIDDEN:
+                self.step(nx, ny)
+
+    def _check_victory(self):
+        ''' check if we've stepped all the safe spaces
+        if so, flag the remaining mines
+        '''
+        if self.num_stepped + self.num_mines >= self.width * self.height:
+            self.end_state = EndState.VICTORY
+            for ny in range(self.height):
+                for nx in range(self.width):
+                    if self.truth[ny][nx]:
+                        self.knowledge[ny][nx] = KnowledgeState.FLAGGED
+        return self.end_state
+
     def step(self, x, y):
         """Try stepping at (x, y).
         If necessary, generate the board first, ensuring (x, y) is safe.
@@ -88,10 +108,11 @@ class MinesweeperBoard(object):
             self._setup_mines(x, y)
 
         if self.end_state:
-            return self.end_state
+            return self.end_state  # the game is already over
 
         if self.knowledge[y][x] != KnowledgeState.HIDDEN:
-            return self.end_state  # None. Can't step on a revealed or flagged space
+            return self.end_state  # can't step on a revealed or flagged space
+
         self.knowledge[y][x] = KnowledgeState.STEPPED
         self.num_stepped += 1
 
@@ -101,18 +122,10 @@ class MinesweeperBoard(object):
 
         # recursively expand if it's a bare patch
         if not self.neighbor_count[y][x]:
-            for nx, ny in self._neighbor_coordinates(x, y):
-                if self.knowledge[ny][nx] == KnowledgeState.HIDDEN:
-                    self.step(nx, ny)
+            self._recursively_clear(x, y)
 
         # check for victory
-        if self.num_stepped + self.num_mines >= self.width * self.height:
-            self.end_state = EndState.VICTORY
-            for ny in range(self.height):
-                for nx in range(self.width):
-                    if self.truth[ny][nx]:
-                        self.knowledge[ny][nx] = KnowledgeState.FLAGGED
-            return self.end_state
+        self.end_state = self._check_victory()
 
         return self.end_state  # None
 
