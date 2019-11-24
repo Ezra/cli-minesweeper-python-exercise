@@ -1,6 +1,12 @@
+#!/usr/bin/env python3
+''' play a game of Minesweeper with the player
+'''
+
 from __future__ import print_function, division, unicode_literals, absolute_import
 
+from blessed import Terminal
 from cmd import Cmd
+import sys
 
 from MinesweeperBoard import MinesweeperBoard, EndState
 
@@ -18,6 +24,8 @@ class MinesweeperCmd(Cmd):
 
         self.prompt = '(Minesweeper) '
         self.intro = '\n'.join(['', WELCOME, NEW_GAME_ADVICE, ''])
+
+        self.term = Terminal()
 
     # ----- game control -----
 
@@ -64,12 +72,12 @@ class MinesweeperCmd(Cmd):
 
         if game_end:
             print()
-            print(self.board)
-            print()
             if game_end == EndState.VICTORY:
                 print('You win!!')
             elif game_end == EndState.DEFEAT:
                 print('You lose.')
+            with self.term.location(0, 1):
+                print(self.board)
 
             self._cleanup_game()
 
@@ -160,9 +168,9 @@ class MinesweeperCmd(Cmd):
         if stop:
             return True
 
-        print()
         if self.board:
-            print(self.board)
+            with self.term.location(0, 0):
+                print(self.board)
         else:
             print(NEW_GAME_ADVICE)
 
@@ -171,8 +179,8 @@ class MinesweeperCmd(Cmd):
 
 def main():
     interpreter = MinesweeperCmd()
-    interpreter.cmdloop()
+    return(interpreter.cmdloop())
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

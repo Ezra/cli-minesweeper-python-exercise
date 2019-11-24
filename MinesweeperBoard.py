@@ -1,8 +1,15 @@
 ''' classes to support playing a game of Minesweeper
 '''
 
+from blessed import Terminal
 from enum import Enum
 import random
+
+
+# instantiate just to get display 'constants'
+#   (this static-ness will only bite us if there's both
+#   interactive and non-interactive output)
+TERM = Terminal()
 
 
 class KnowledgeState(Enum):
@@ -12,13 +19,13 @@ class KnowledgeState(Enum):
 
     def __str__(self):
         if self == self.HIDDEN:
-            return '?'
+            return TERM.cyan('?')
         elif self == KnowledgeState.FLAGGED:
-            return '#'
+            return TERM.yellow('#')
         elif self == KnowledgeState.STEPPED:
-            return 'S'
+            return TERM.blue('S')
         else:
-            return 'E'
+            return TERM.red('E')
 
 
 class EndState(Enum):
@@ -31,7 +38,9 @@ class MinesweeperBoard(object):
     def __init__(self, width, height, num_mines):
         """Initialize a minesweeper board for play.
         width, height: dimensions
-        num_mines: number of mines in the grid (must be less than width * height)"""
+        num_mines: number of mines in the grid (must be less than width * height)
+        term: formatting terminal from Blessed or Blessings
+        """
 
         if num_mines >= width * height:
             # this many mines could cause a naive mine-placement algorithm to loop indefinitely
@@ -153,23 +162,28 @@ class MinesweeperBoard(object):
         if self.knowledge[y][x] != KnowledgeState.STEPPED:
             return str(self.knowledge[y][x])
         elif self.truth[y][x]:
-            return '*'
+            return TERM.red('*')
         elif not self.neighbor_count[y][x]:
-            return '.'
+            return TERM.blue('.')
         else:
             return str(self.neighbor_count[y][x])
 
     def _truth_str(self):
         contents = '\n'.join([''.join('!' if has_mine else '.' for has_mine in row) for row in self.truth])
-        return self._add_indices(contents)
+        return self._add_border(contents)
 
     def __str__(self):
         contents = '\n'.join([''.join(self._cell_str(x, y) for x in range(self.width)) for y in range(self.height)])
-        return self._add_indices(contents)
+        return self._add_border(contents)
 
-    def _add_indices(self, contents):
+    def _add_border(self, contents):
+        index_color = TERM.white
+        border_color = TERM.green
+        row_end = border_color('|')
         return '\n'.join(
-            ['  ' + ''.join(str(x) for x in range(self.width))] +
-            [' ' * (self.width + 2)] +
-            [str(y) + ' ' + line for y, line in enumerate(contents.split('\n'))]
-        )
+            [border_color('+' + (2 + self.width) * '-' + '+')] +
+            [row_end + index_color('  ' + ''.join(str(x) for x in range(self.width))) + row_end] +
+            [row_end + index_color(' ' * (self.width + 2)) + row_end] +
+            [row_end + index_color(str(y) + ' ') + line + row_end for y, line in enumerate(contents.split('\n'))] +
+            [border_color('+' + (2 + self.width) * '-' + '+')]
+            )
