@@ -179,7 +179,7 @@ class MinesweeperCmd(Cmd):
 
 def main():
     interpreter = MinesweeperCmd()
-    sys.exit(interpreter.cmdloop())
+    return(interpreter.cmdloop())
 
 
 if __name__ == '__main__':
