@@ -76,7 +76,7 @@ class MinesweeperCmd(Cmd):
                 print('You win!!')
             elif game_end == EndState.DEFEAT:
                 print('You lose.')
-            with self.term.location(0, 0):
+            with self.term.location(0, 1):
                 print(self.board)
 
             self._cleanup_game()
