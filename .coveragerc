@@ -1,0 +1,11 @@
+[paths]
+Documents = 
+    /mnt/c/Users/Ezra Bradford/Documents
+    /home/ezrab/Documents
+
+[report]
+# percent
+fail_under = 50
+
+[xml]
+output = cov.xml
