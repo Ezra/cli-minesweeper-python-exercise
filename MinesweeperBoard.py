@@ -39,7 +39,7 @@ class MinesweeperBoard(object):
         """Initialize a minesweeper board for play.
         width, height: dimensions
         num_mines: number of mines in the grid (must be less than width * height)
-        term: formatting terminal from Blessed or Blessed
+        term: formatting terminal from Blessed or Blessings
         """
 
         if num_mines >= width * height:
